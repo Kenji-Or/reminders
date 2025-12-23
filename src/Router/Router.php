@@ -1,4 +1,8 @@
 <?php
+namespace App\Router;
+
+use App\Router\Route;
+use App\Router\RouterException;
 class Router {
 
     private $url;

@@ -1,5 +1,8 @@
 <?php
-require_once __DIR__.'/../db.php';
+namespace App\Controllers;
+
+use PDOException;
+
 class UserController {
     private $pdo;
 
@@ -33,10 +36,16 @@ class UserController {
             echo json_encode(['error' => 'Invalid input']);
             return;
         }
+        $password = password_hash($data['password'], PASSWORD_BCRYPT);
         $stmt = $this->pdo->prepare('INSERT INTO users (email, password) VALUES (?, ?)');
-        $stmt->execute([$data['email'], $data['password']]);
-        http_response_code(201);
-        echo json_encode(['message' => 'User created', 'id' => $this->pdo->lastInsertId()]);
+        try {
+            $stmt->execute([$data['email'], $password]);
+            http_response_code(201);
+            echo json_encode(['message' => 'User created', 'id' => $this->pdo->lastInsertId()]);
+        } catch (PDOException $e) {
+            http_response_code(400);
+            echo json_encode(['error' => 'User already exists']);
+        }
     }
 
     public function updateUser($id) {
