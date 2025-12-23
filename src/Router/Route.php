@@ -35,11 +35,21 @@ class Route {
         } elseif(is_string($this->callable) && strpos($this->callable, '@') !== false) {
             // Support "Controller@method"
             list($controller, $method) = explode('@', $this->callable);
-            require_once __DIR__."/Controllers/$controller.php";
-            $obj = new $controller();
+            $controllerClass = "App\\Controllers\\$controller";
+
+            if (!class_exists($controllerClass)) {
+                throw new \Exception("Controller $controllerClass not found");
+            }
+
+            $obj = new $controllerClass();
+
+            if (!method_exists($obj, $method)) {
+                throw new \Exception("Method $method not found in $controllerClass");
+            }
+
             return call_user_func_array([$obj, $method], $this->matches);
         }
-        throw new Exception("Callable not valid");
+        throw new \Exception("Callable not valid");
     }
 
 
